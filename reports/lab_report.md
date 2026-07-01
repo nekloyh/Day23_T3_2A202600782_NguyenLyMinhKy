@@ -1,27 +1,4 @@
-"""Report generation helper."""
-
-from __future__ import annotations
-
-from pathlib import Path
-
-from .metrics import MetricsReport
-
-
-def render_report(metrics: MetricsReport) -> str:
-    """Render a complete lab report from metrics data."""
-    rows = [
-        "| Scenario | Expected route | Actual route | Success | Retries | Approvals | Latency ms |",
-        "|---|---|---|---:|---:|---:|---:|",
-    ]
-    for item in metrics.scenario_metrics:
-        rows.append(
-            "| "
-            f"{item.scenario_id} | {item.expected_route} | {item.actual_route or ''} | "
-            f"{item.success} | {item.retry_count} | {item.interrupt_count} | "
-            f"{item.latency_ms} |"
-        )
-
-    return f"""# Day 08 Lab Report
+# Day 08 Lab Report
 
 ## 1. Team / student
 
@@ -62,14 +39,22 @@ control, and `dead_letter` handles exhausted retries.
 
 | Metric | Value |
 |---|---:|
-| Total scenarios | {metrics.total_scenarios} |
-| Success rate | {metrics.success_rate:.2%} |
-| Average nodes visited | {metrics.avg_nodes_visited:.2f} |
-| Total retries | {metrics.total_retries} |
-| Total interrupts/approvals | {metrics.total_interrupts} |
-| Resume success | {metrics.resume_success} |
+| Total scenarios | 7 |
+| Success rate | 100.00% |
+| Average nodes visited | 6.43 |
+| Total retries | 3 |
+| Total interrupts/approvals | 2 |
+| Resume success | True |
 
-{chr(10).join(rows)}
+| Scenario | Expected route | Actual route | Success | Retries | Approvals | Latency ms |
+|---|---|---|---:|---:|---:|---:|
+| S01_simple | simple | simple | True | 0 | 0 | 3009 |
+| S02_tool | tool | tool | True | 0 | 0 | 2917 |
+| S03_missing | missing_info | missing_info | True | 0 | 0 | 1107 |
+| S04_risky | risky | risky | True | 0 | 1 | 2942 |
+| S05_error | error | error | True | 2 | 0 | 2147 |
+| S06_delete | risky | risky | True | 0 | 1 | 2839 |
+| S07_dead_letter | error | error | True | 1 | 0 | 919 |
 
 ## 5. Failure analysis
 
@@ -102,11 +87,3 @@ using `langgraph-checkpoint-sqlite` and WAL mode. The generated metrics set `res
 With one more day, I would productionize tool contracts first: replace string-based mock results
 with typed tool result models, add LLM-as-judge evaluation for ambiguous tool outputs, and add
 state-history replay tests against the SQLite checkpointer.
-"""
-
-
-def write_report(metrics: MetricsReport, output_path: str | Path) -> None:
-    """Write the rendered report to a file."""
-    path = Path(output_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render_report(metrics), encoding="utf-8")
